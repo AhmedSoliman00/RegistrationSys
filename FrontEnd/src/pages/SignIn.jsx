@@ -1,8 +1,9 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import validation from "../validations/loginValidation";
+import axios from "axios";
 
-function SignUp() {
+function SignIn() {
   const navigate = useNavigate();
   const [signInData, setSignInData] = useState({
     email: "",
@@ -10,13 +11,29 @@ function SignUp() {
   });
   const [errors, setErrors] = useState({}); 
   
-  function handleChange(e) {
+  const handleChange = (e) => {
     setSignInData({ ...signInData, [e.target.id]: e.target.value });
   }
+
   const handleSubmit =  (e) => {
     e.preventDefault();
-    setErrors(validation(signInData));
-  };
+    const validationErrors = validation(signInData);
+    setErrors(validationErrors);
+    if (
+      validationErrors.email === "" &&
+      validationErrors.password === ""
+    ) {
+      axios.post("http://localhost:8081/signin", signInData)
+          .then((res) => {
+            if (res.data.message === "success") {
+              navigate("/home");
+            } else {
+              console.log(res.data)
+              alert("Invalid credentials");
+            }
+          })
+    }
+  } // This closing brace was misplaced
 
   return (
     <div className="max-w-lg mx-auto">
@@ -59,4 +76,4 @@ function SignUp() {
   );
 }
 
-export default SignUp;
+export default SignIn;
