@@ -1,41 +1,23 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import validation from "../validations/signUpValidation";
+
 
 function SignUp() {
-  const [formData, setFormData] = useState({});
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [signUpData, setSignUpData] = useState({
+    username: "",
+    email: "",
+    password: "",
+  });
+  const [errors, setError] = useState({});
+
   function handleChange(e) {
-    setFormData({ ...formData, [e.target.id]: e.target.value });
+    setSignUpData({ ...signUpData, [e.target.id]: e.target.value });
   }
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      setLoading(true);
-      const res = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-      const data = await res.json(); // the data have the properties about the request i made. converted  to see it in the console
-      console.log(data);
-
-      if (data.success === false) {
-        setError(data.message);
-        setLoading(false);
-        return;
-      } else {
-        setLoading(false);
-        setError(null);
-        navigate("/sign-in"); // to navigate to another component when finished successfully
-      }
-    } catch (error) {
-      setLoading(false);
-      setError(error.message);
-    }
+    setError(validation(signUpData));
   };
 
   return (
@@ -63,11 +45,15 @@ function SignUp() {
           id="password"
           onChange={handleChange}
         />
-        <button
-          disabled={loading}
-          className="bg-orange-400 text-white p-3 rounded-lg uppercase font-bold hover:duration-500 hover:bg-orange-600 transition-colors "
-        >
-          {loading ? "Loading..." : "Sign Up"}
+        {Object.keys(errors).length > 0 && (
+          <div className="text-red-500">
+            {Object.values(errors).map((error, index) => (
+              <p key={index}>{error}</p>
+            ))}
+          </div>
+        )}
+        <button className="bg-orange-400 text-white p-3 rounded-lg uppercase font-bold hover:duration-500 hover:bg-orange-600 transition-colors ">
+          SignUp
         </button>
       </form>
       <div className="mt-5">
@@ -76,7 +62,6 @@ function SignUp() {
           <span className="text-blue-600">Sign in</span>
         </Link>
       </div>
-      {error && <p className="text-red-500">{error}</p>}
     </div>
   );
 }
